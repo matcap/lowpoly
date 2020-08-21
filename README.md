@@ -4,6 +4,9 @@
 
 ## Usage
 ```
+usage: lowpoly [-h] [-dx density] [-dy density] [-a aascale] [-w wiggle] [-cd colordev] [-s scale]
+               input_img output_img
+
 Lowpolyfy an image.
 
 positional arguments:
@@ -17,9 +20,12 @@ optional arguments:
   -dy density, --densityy density
                         number of grid points along Y axis
   -a aascale, --antialias aascale
-                        antialias scale
+                        antialias scale factor
   -w wiggle, --wiggle wiggle
                         random grid wiggle magnitude (pixel)
-  -cd--colordev colordev
+  -cd colordev, --colordev colordev
                         random color brightness deviation (percentage)
+  -s scale, --scale scale
+                        output image scale factor
+
 ```
