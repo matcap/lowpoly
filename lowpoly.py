@@ -79,19 +79,21 @@ def display_progress(total, current):
 #   MAIN
 #
 
-parser = argparse.ArgumentParser(description='Lowpolyfy an image.')
+parser = argparse.ArgumentParser(prog='lowpoly',description='Lowpolyfy an image.')
 parser.add_argument('input_img', type=str, help='input image (at least 2x2)')
 parser.add_argument('output_img', type=str, help='output image name')
 parser.add_argument('-dx', '--densityx', type=float, default=10.0, help='number of grid points along X axis', metavar='density')
 parser.add_argument('-dy', '--densityy', type=float, default=10.0, help='number of grid points along Y axis', metavar='density')
-parser.add_argument('-a', '--antialias', type=int, default=2, help='antialias scale', metavar='aascale')
+parser.add_argument('-a', '--antialias', type=int, default=2, help='antialias scale factor', metavar='aascale')
 parser.add_argument('-w', '--wiggle', type=int, default=0, help='random grid wiggle magnitude (pixel)', metavar='wiggle')
-parser.add_argument('-cd' '--colordev', type=float, default=0, help='random color brightness deviation (percentage)', metavar='colordev')
+parser.add_argument('-cd', '--colordev', type=float, default=0.0, help='random color brightness deviation (percentage)', metavar='colordev')
+parser.add_argument('-s', '--scale', type=float, default=1.0, help='output image scale factor', metavar='scale')
+
 
 args = parser.parse_args()
 
 # Adjusting input arguments
-args.wiggle *= args.antialias
+args.wiggle *= args.antialias * args.scale
 
 # Load original image
 img = Image.open(args.input_img)
@@ -102,11 +104,13 @@ if img.width < 2 or img.height < 2:
 
 print(f"Input image: {args.input_img} w:{img.width} h:{img.height}")
 
-img = img.resize((img.width * args.antialias, img.height * args.antialias), Image.ANTIALIAS)
+img = img.resize((int(img.width * args.antialias * args.scale), 
+                int(img.height * args.antialias * args.scale)),
+                Image.BICUBIC)
 imgv = np.asarray(img)
 imgv = imgv.copy()
 
-if args.antialias > 1:
+if args.antialias > 1 or args.scale > 1:
     print(f"Upscaling to: w:{img.width} h:{img.height}")
 
 # Generate a map of evenly spaced vertices,
@@ -137,7 +141,7 @@ for r in range(0, len(vertmap) - 1):
         v1 = vertmap[r      ][c     ]
         v2 = vertmap[r      ][c + 1 ]
         v3 = vertmap[r + 1  ][c     ]
-        average_region(imgv, v1, v2, v3, args.cd__colordev)
+        average_region(imgv, v1, v2, v3, args.colordev)
         processed_triangles += 1
         display_progress(total_triangles, processed_triangles)
 
@@ -147,7 +151,7 @@ for r in range(1, len(vertmap)):
         v1 = vertmap[r      ][c - 1 ]
         v2 = vertmap[r      ][c     ]
         v3 = vertmap[r - 1  ][c     ]
-        average_region(imgv, v1, v2, v3, args.cd__colordev)
+        average_region(imgv, v1, v2, v3, args.colordev)
         processed_triangles += 1
         display_progress(total_triangles, processed_triangles)
 
@@ -155,7 +159,7 @@ for r in range(1, len(vertmap)):
 # Save image back
 
 imgout = Image.fromarray(imgv)
-imgout = imgout.resize((int(imgout.width / args.antialias), int(imgout.height / args.antialias)), Image.ANTIALIAS)
+imgout = imgout.resize((int(imgout.width / args.antialias), int(imgout.height / args.antialias)), Image.LANCZOS)
 print(f"Output image: {args.output_img} w:{imgout.width} h:{imgout.height}")
 
 imgout.save(args.output_img)
