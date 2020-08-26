@@ -1,6 +1,12 @@
 # lowpoly
 
  A simple and inefficient low-polygon image generator 
+ 
+## Examples
+
+Original                                  |Lowpoly
+:----------------------------------------:|:------------------------------------------------:
+<img src="examples/lena.png" width="256"> |<img src="examples/lena_lowpoly.png" width="256"> 
 
 ## Usage
 ```
